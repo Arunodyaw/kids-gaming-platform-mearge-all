@@ -19,10 +19,10 @@ const Navigation = () => {
   // Common navigation items for all roles
   const commonNavItems = [
     { path: '/dashboard', icon: <Home className="w-5 h-5" />, label: 'Dashboard' },
-    { path: '/patient', icon: <User className="w-5 h-5" />, label: 'Patient Profile' },
-    { path: '/activities', icon: <Activity className="w-5 h-5" />, label: 'Activities' },
+    //{ path: '/patient', icon: <User className="w-5 h-5" />, label: 'Patient Profile' },
+    //{ path: '/activities', icon: <Activity className="w-5 h-5" />, label: 'Activities' },
     { path: '/progress', icon: <TrendingUp className="w-5 h-5" />, label: 'Progress' },
-    { path: '/schedule', icon: <Calendar className="w-5 h-5" />, label: 'Schedule' },
+    //{ path: '/schedule', icon: <Calendar className="w-5 h-5" />, label: 'Schedule' },
     // In Navigation.jsx
     { path: '/games/puzzle/report', icon: <FileText className="w-5 h-5" />, label: 'Puzzle Report' }
   ];
@@ -105,13 +105,13 @@ const Navigation = () => {
                 </span>
               </button>
               
-              {/* Points Display */}
+              {/* Points Display
               <button className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-yellow-400 to-orange-400 text-white rounded-lg">
                 <Award className="w-5 h-5" />
                 <span className="font-bold">425</span>
-              </button>
+              </button> */}
               
-              {/* Settings */}
+              Settings
               <button className="p-2 rounded-full bg-gray-100 hover:bg-gray-200">
                 <Settings className="w-5 h-5" />
               </button>
