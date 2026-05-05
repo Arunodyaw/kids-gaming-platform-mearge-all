@@ -753,12 +753,7 @@ const JigsawPuzzle = () => {
           >
             <div className="text-6xl mb-3 animate-bounce">🎮✨👋</div>
             <p className="text-yellow-800 text-xl mb-3 font-bold">Let's create your player profile!</p>
-            <button
-              onClick={goToAddChild}
-              className="px-6 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-xl hover:from-yellow-600 hover:to-orange-600 font-bold text-lg shadow-lg transform hover:scale-105 transition-all inline-flex items-center gap-2"
-            >
-              <span>✨</span> Add My Profile <span>✨</span>
-            </button>
+            <p className="text-yellow-700 mb-6">Add a child to start playing and tracking your puzzle adventures! 🧩🌟</p>
           </motion.div>
         )}
 
