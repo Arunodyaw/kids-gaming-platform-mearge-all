@@ -1,0 +1,4 @@
+username,avg_click_interval,click_variability_std,total_invalid_clicks,reflexive_fast_clicks,total_mouse_distance,total_errors,total_score
+TestKid,1194.39,1042.58,4,0,6152.72,4,5
+TestKid,491.77,399.32,22,5,5565.73,11,2
+TestKid,995.7,438.34,2,1,14205.1,15,8

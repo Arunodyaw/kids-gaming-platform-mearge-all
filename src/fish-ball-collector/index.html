@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fish Ball Collector / මාළු බෝල එකතු කරන්නා / மீன் பந்து சேகரிப்பவர்</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>
+            <span class="english">Fish Ball Collector</span>
+            <span class="sinhala">මාළු බෝල එකතු කරන්නා</span>
+            <span class="tamil">மீன் பந்து சேகரிப்பவர்</span>
+        </h1>
+        <div class="subtitle">
+            <span class="sinhala">මාළු බෝල එකතු කරන්නා</span>
+            <span class="tamil">மீன் பந்து சேகரிப்பவர்</span>
+        </div>
+
+        <div class="game-info">
+            <div class="info-item">
+                <div class="info-label">
+                    <div class="bilingual">
+                        <div class="sinhala">ලකුණු</div>
+                        <div class="tamil">புள்ளிகள்</div>
+                        <div class="english">SCORE</div>
+                    </div>
+                </div>
+                <div id="score" class="info-value">0</div>
+            </div>
+
+            <div class="info-item">
+                <div class="info-label">
+                    <div class="bilingual">
+                        <div class="sinhala">රතු බෝල ස්පර්ශ කළා</div>
+                        <div class="tamil">சிவப்பு பந்துகள் தொடப்பட்டன</div>
+                        <div class="english">RED BALLS TOUCHED</div>
+                    </div>
+                </div>
+                <div class="game-status">
+                    <div class="red-ball-counter" id="redBall1">0</div>
+                    <div class="red-ball-counter" id="redBall2">1</div>
+                    <div class="red-ball-counter" id="redBall3">2</div>
+                </div>
+            </div>
+
+            <div class="info-item">
+                <div class="info-label">
+                    <div class="bilingual">
+                        <div class="sinhala">බෝල එකතු කළා</div>
+                        <div class="tamil">பந்துகள் சேகரிக்கப்பட்டன</div>
+                        <div class="english">BALLS COLLECTED</div>
+                    </div>
+                </div>
+                <div id="ballsCollected" class="info-value">0</div>
+            </div>
+        </div>
+
+        <div class="messages-container" id="messagesContainer"></div>
+
+        <canvas id="gameCanvas" width="800" height="500"></canvas>
+
+        <div class="controls">
+            <button id="startBtn">Start Game</button>
+            <button id="pauseBtn">Pause</button>
+            <button id="restartBtn">Restart</button>
+        </div>
+
+        <div class="sound-controls">
+            <button id="soundOnBtn" class="sound-btn">🔊 Sound On</button>
+            <button id="soundOffBtn" class="sound-btn">🔇 Sound Off</button>
+        </div>
+
+        <div class="voice-controls">
+            <button id="voiceOnBtn" class="voice-btn active">🎤 Voice On</button>
+            <button id="voiceOffBtn" class="voice-btn">🔇 Voice Off</button>
+        </div>
+
+        <div class="language-toggle">
+            <button id="sinhalaBtn" class="language-btn">සිංහල</button>
+            <button id="tamilBtn" class="language-btn">தமிழ்</button>
+            <button id="englishBtn" class="language-btn active">English</button>
+        </div>
+
+        <div class="instructions">
+            <h3>
+                <span class="english">How to Play</span>
+                <span class="sinhala">ක්‍රීඩා කරන ආකාරය</span>
+                <span class="tamil">விளையாடுவது எப்படி</span>
+            </h3>
+
+            <div class="game-process">
+                <!-- Step 1: Controls -->
+                <div class="step-row">
+                    <div class="step-number">01</div>
+                    <div class="step-content">
+                        <h4>🎮
+                            <span class="english">Controls</span>
+                            <span class="sinhala">පාලනයන්</span>
+                            <span class="tamil">கட்டுப்பாடுகள்</span>
+                        </h4>
+                        <p>
+                            <span class="english">Use your mouse or finger to move Flippy the Fish through the water. Go
+                                wherever the balls appear!</span>
+                            <span class="sinhala">ෆ්ලිප්පී මාළුවාව ජලය හරහා ගෙනයාමට ඔබේ මූසිකය හෝ ඇඟිල්ල භාවිතා කරන්න.
+                                බෝල ඇති ඕනෑම තැනකට යන්න!</span>
+                            <span class="tamil">மீன் ஃபிப்பியை தண்ணீர் வழியாக நகர்த்த உங்கள் மவுஸ் அல்லது விரலைப்
+                                பயன்படுத்துங்கள். பந்துகள் தோன்றும் இடமெல்லாம் செல்லுங்கள்!</span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Step 2: Collection -->
+                <div class="step-row">
+                    <div class="step-number">02</div>
+                    <div class="step-content">
+                        <h4>⭐
+                            <span class="english">Scoring</span>
+                            <span class="sinhala">ලකුණු ලබාගැනීම</span>
+                            <span class="tamil">புள்ளிகள்</span>
+                        </h4>
+                        <div class="scoring-table">
+                            <div class="score-item">
+                                <span class="color-sample blue-ball"></span>
+                                <span class="english">Blue: 10</span><span class="sinhala">නිල්: 10</span><span
+                                    class="tamil">நீலம்: 10</span>
+                            </div>
+                            <div class="score-item">
+                                <span class="color-sample green-ball"></span>
+                                <span class="english">Green: 20</span><span class="sinhala">කොළ: 20</span><span
+                                    class="tamil">பச்சை: 20</span>
+                            </div>
+                            <div class="score-item">
+                                <span class="color-sample red-ball"></span>
+                                <span class="english">Red: 30</span><span class="sinhala">රතු: 30</span><span
+                                    class="tamil">சிவப்பு: 30</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Survival -->
+                <div class="step-row">
+                    <div class="step-number">03</div>
+                    <div class="step-content">
+                        <h4>⚠️
+                            <span class="english">Health Rules</span>
+                            <span class="sinhala">සෞඛ්‍ය රීති</span>
+                            <span class="tamil">சுகாதார விதிகள்</span>
+                        </h4>
+                        <p>
+                            <span class="english">Touching red balls gives big points, but be careful! If you touch 3
+                                red balls, it's Game Over.</span>
+                            <span class="sinhala">රතු බෝල ස්පර්ශ කිරීමෙන් වැඩි ලකුණු ලැබුණත්, ප්‍රවේශම් වන්න! ඔබ රතු බෝල
+                                3ක් ස්පර්ශ කළහොත් ක්‍රීඩාව අවසන් වේ.</span>
+                            <span class="tamil">சிவப்பு பந்துகளைத் தொடுவது அதிகப் புள்ளிகளைத் தரும், ஆனால் கவனமாக
+                                இருங்கள்! நீங்கள் 3 சிவப்பு பந்துகளைத் தொட்டால், ஆட்டம் முடிந்துவிடும்.</span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Step 4: Celebration -->
+                <div class="step-row">
+                    <div class="step-number">04</div>
+                    <div class="step-content">
+                        <h4>🎉
+                            <span class="english">Win Big</span>
+                            <span class="sinhala">දිනුම කරා</span>
+                            <span class="tamil">பெரிய வெற்றி</span>
+                        </h4>
+                        <p>
+                            <span class="english">Keep playing to hit milestones like 50, 100, and 200 for incredible
+                                celebrations!</span>
+                            <span class="sinhala">විශාල සැමරුම් සඳහා 50, 100, සහ 200 වැනි සන්ධිස්ථාන කරා දිගටම ක්‍රීඩා
+                                කරන්න!</span>
+                            <span class="tamil">அற்புதமான கொண்டாட்டங்களுக்கு 50, 100 மற்றும் 200 போன்ற மைல்கற்களை அடைய
+                                தொடர்ந்து விளையாடுங்கள்!</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="gameOver">
+            <h2>
+                <span class="english">GAME OVER</span>
+                <span class="sinhala">ක්‍රීඩාව අවසන්</span>
+                <span class="tamil">ஆட்டம் முடிந்தது</span>
+            </h2>
+            <p>
+                <span class="english">You touched 3 red balls!</span>
+                <span class="sinhala">රතු බෝල 3ක් ස්පර්ශ කළා!</span>
+                <span class="tamil">நீங்கள் 3 சிவப்பு பந்துகளைத் தொட்டீர்கள்!</span>
+            </p>
+            <div id="finalScore">
+                <span class="english">Final Score: 0</span>
+                <span class="sinhala">අවසාන ලකුණු: 0</span>
+                <span class="tamil">இறுதிப் புள்ளிகள்: 0</span>
+            </div>
+            <button id="playAgainBtn">Play Again / යළි ක්‍රීඩා කරන්න / மீண்டும் விளையாடு</button>
+        </div>
+    </div>
+
+    <script>
+        // Global Game State - Shared across all modules
+        window.gameState = {
+            // Game variables
+            currentLanguage: 'english',
+            gameRunning: false,
+            gamePaused: false,
+            soundEnabled: true,
+            voiceEnabled: true,
+            speechSynthesisSupported: false,
+            particles: [],
+            sounds: {},
+            voices: [],
+            lastCelebrationScore: 0,
+
+            // Game data
+            score: 0,
+            ballsCollected: 0,
+            redBallsTouched: 0,
+            balls: [],
+            blueBallCount: 0,
+            greenBallCount: 0,
+            redBallCount: 0,
+            ballSpawnTimer: 0,
+
+            // DOM elements (will be initialized)
+            canvas: null,
+            ctx: null,
+            scoreElement: null,
+            ballsCollectedElement: null,
+            redBallCounters: null,
+            gameOverScreen: null,
+            finalScoreElement: null,
+            messagesContainer: null,
+
+            // Game objects
+            fish: null,
+            animationId: null,
+
+            // Mouse position
+            mouseX: 400,
+            mouseY: 250,
+
+            // Constants
+            ballColors: ['#2196F3', '#4CAF50', '#F44336'],
+            ballPoints: [10, 20, 30],
+            ballRadius: 20,
+            ballSpawnInterval: 60,
+            MAX_RED_BALLS: 3
+        };
+    </script>
+
+    <script src="data/messages.js"></script>
+    <script src="js/sounds.js"></script>
+    <script src="js/speech.js"></script>
+    <script src="js/eventBusBridge.js"></script>
+    <script src="js/gameTracker.js"></script>
+    <script src="js/game.js"></script>
+</body>
+
+</html>

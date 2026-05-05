@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fish Ball Collector / මාළු බෝල එකතු කරන්නා</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Fish Ball Collector</h1>
+        <div class="subtitle">මාළු බෝල එකතු කරන්නා</div>
+        
+        <div class="game-info">
+            <div class="info-item">
+                <div class="info-label">
+                    <div class="bilingual">
+                        <div class="sinhala">ලකුණු</div>
+                        <div class="english">SCORE</div>
+                    </div>
+                </div>
+                <div id="score" class="info-value">0</div>
+            </div>
+            
+            <div class="info-item">
+                <div class="info-label">
+                    <div class="bilingual">
+                        <div class="sinhala">රතු බෝල ස්පර්ශ කළා</div>
+                        <div class="english">RED BALLS TOUCHED</div>
+                    </div>
+                </div>
+                <div class="game-status">
+                    <div class="red-ball-counter" id="redBall1">0</div>
+                    <div class="red-ball-counter" id="redBall2">1</div>
+                    <div class="red-ball-counter" id="redBall3">2</div>
+                </div>
+            </div>
+            
+            <div class="info-item">
+                <div class="info-label">
+                    <div class="bilingual">
+                        <div class="sinhala">බෝල එකතු කළා</div>
+                        <div class="english">BALLS COLLECTED</div>
+                    </div>
+                </div>
+                <div id="ballsCollected" class="info-value">0</div>
+            </div>
+        </div>
+        
+        <div class="messages-container" id="messagesContainer"></div>
+        
+        <canvas id="gameCanvas" width="800" height="500"></canvas>
+        
+        <div class="controls">
+            <button id="startBtn">Start Game</button>
+            <button id="pauseBtn">Pause</button>
+            <button id="restartBtn">Restart</button>
+        </div>
+        
+        <div class="sound-controls">
+            <button id="soundOnBtn" class="sound-btn">🔊 Sound On</button>
+            <button id="soundOffBtn" class="sound-btn">🔇 Sound Off</button>
+        </div>
+        
+        <div class="voice-controls">
+            <button id="voiceOnBtn" class="voice-btn active">🎤 Voice On</button>
+            <button id="voiceOffBtn" class="voice-btn">🔇 Voice Off</button>
+        </div>
+        
+        <div class="language-toggle">
+            <button id="sinhalaBtn" class="language-btn">සිංහල</button>
+            <button id="englishBtn" class="language-btn active">English</button>
+        </div>
+        
+        <div class="instructions">
+            <h3>How to Play / ක්‍රීඩා කරන ආකාරය</h3>
+            <ul>
+                <li>Use your mouse or touch to move Flippy the Fish around / මූසිකය හෝ ඇඟිල්ලෙන් ෆ්ලිප්පී මාළුවා චලනය කරන්න</li>
+                <li>Collect balls to earn points: 
+                    <span class="color-sample blue-ball"></span> Blue = 10 points / නිල් = 10 ලකුණු, 
+                    <span class="color-sample green-ball"></span> Green = 20 points / කොළ = 20 ලකුණු,
+                    <span class="color-sample red-ball"></span> Red = 30 points but be careful! / රතු = 30 ලකුණු (ප්‍රවේශම් වන්න!)
+                </li>
+                <li>If you touch 3 red balls, the game is over! / රතු බෝල 3ක් ස්පර්ශ කළේ නම් ක්‍රීඩාව අවසන්!</li>
+                <li>Special celebrations at 50, 100, 200, 300, 400... points! / විශේෂ සමරු 50, 100, 200, 300, 400... ලකුණු වලදී!</li>
+                
+            </ul>
+        </div>
+        
+        <div id="gameOver">
+            <h2>GAME OVER</h2>
+            <p>You touched 3 red balls! / රතු බෝල 3ක් ස්පර්ශ කළා!</p>
+            <div id="finalScore">Final Score: 0 / අවසාන ලකුණු: 0</div>
+            <button id="playAgainBtn">Play Again / යළි ක්‍රීඩා කරන්න</button>
+        </div>
+    </div>
+
+    <script>
+        // Global Game State - Shared across all modules
+        window.gameState = {
+            // Game variables
+            currentLanguage: 'english',
+            gameRunning: false,
+            gamePaused: false,
+            soundEnabled: true,
+            voiceEnabled: true,
+            speechSynthesisSupported: false,
+            particles: [],
+            sounds: {},
+            voices: [],
+            lastCelebrationScore: 0,
+            
+            // Game data
+            score: 0,
+            ballsCollected: 0,
+            redBallsTouched: 0,
+            balls: [],
+            blueBallCount: 0,
+            greenBallCount: 0,
+            redBallCount: 0,
+            ballSpawnTimer: 0,
+            
+            // DOM elements (will be initialized)
+            canvas: null,
+            ctx: null,
+            scoreElement: null,
+            ballsCollectedElement: null,
+            redBallCounters: null,
+            gameOverScreen: null,
+            finalScoreElement: null,
+            messagesContainer: null,
+            
+            // Game objects
+            fish: null,
+            animationId: null,
+            
+            // Mouse position
+            mouseX: 400,
+            mouseY: 250,
+            
+            // Constants
+            ballColors: ['#2196F3', '#4CAF50', '#F44336'],
+            ballPoints: [10, 20, 30],
+            ballRadius: 20,
+            ballSpawnInterval: 60,
+            MAX_RED_BALLS: 3
+        };
+    </script>
+    
+    <script src="data/messages.js"></script>
+    <script src="js/sounds.js"></script>
+    <script src="js/speech.js"></script>
+    <script src="js/eventBusBridge.js"></script>
+    <script src="js/gameTracker.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html>

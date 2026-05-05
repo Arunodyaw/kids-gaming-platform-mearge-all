@@ -1,0 +1,4 @@
+username,level,difficulty,avg_click_interval,click_variability_std,total_invalid_clicks,inhibitory_failures,reflexive_fast_clicks,total_mouse_distance,total_errors,perseverative_errors,total_score
+aaa,1,standard,1075.5,111.5,0,1,0,1106.78,0,0,2
+aaa,2,standard,1261.0,250.29,1,1,0,3285.7,4,0,4
+aaa,3,hard,1307.52,222.76,0,1,0,12938.39,26,0,8
