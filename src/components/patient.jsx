@@ -12,85 +12,51 @@ import {
   Bell, Plus, Trash2, Eye, BarChart3
 } from 'lucide-react';
 
-// Mock API Service
+// --- REAL API SERVICE ---
+// Helper to get token
+const getAuthHeaders = () => {
+  const data = JSON.parse(localStorage.getItem('user')); // Adjust if your token is stored differently
+  return {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${data?.token}`
+  };
+};
+
 const PatientService = {
-  getPatientData: async (patientId) => {
-    // In real app, fetch from API
-    return {
-      id: patientId,
-      name: 'Jamie Smith',
-      age: 7,
-      gender: 'Male',
-      birthDate: '2016-08-15',
-      diagnosisDate: '2023-05-15',
-      adhdType: 'Combined Type',
-      severity: 'Moderate',
-      currentMedication: 'Behavioral Therapy + Methylphenidate (10mg)',
-      nextAppointment: '2024-01-25',
-      doctor: 'Dr. Sarah Johnson',
-      school: 'Sunshine Elementary',
-      grade: '2nd Grade',
-      parentName: 'Michael Smith',
-      parentEmail: 'michael@example.com',
-      parentPhone: '+1 (555) 123-4567',
-      emergencyContact: 'Emily Smith',
-      emergencyPhone: '+1 (555) 987-6543',
-      allergies: 'None reported',
-      notes: 'Responds well to visual schedules and immediate positive reinforcement'
-    };
+  // 1. Get ALL data in one efficient call
+  getFullDashboard: async () => {
+    const res = await fetch('http://localhost:5000/api/patient/full-profile', {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
+    if (!res.ok) throw new Error("Failed to fetch data");
+    const json = await res.json();
+    return json.data;
   },
 
-  updatePatientData: async (patientId, data) => {
-    // In real app, send to API
-    console.log('Updating patient:', patientId, data);
-    return { success: true, data };
+  // 2. Update the Profile
+  updatePatientData: async (dataToUpdate) => {
+    const res = await fetch('http://localhost:5000/api/patient/update', {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(dataToUpdate)
+    });
+    const json = await res.json();
+    if (!json.success) throw new Error(json.message);
+    return json;
   },
 
-  getPatientStats: async (patientId) => ({
-    focusScore: 68,
-    taskCompletion: 72,
-    emotionalRegulation: 65,
-    socialSkills: 60,
-    dailyStreak: 5,
-    totalPoints: 425,
-    weeklyProgress: '+12%',
-    monthlyTrend: 'Improving'
-  }),
-
-  getActivities: async (patientId) => [
-    { id: 1, type: 'task', description: 'Completed math worksheet', time: '2 hours ago', points: 15, icon: '📚' },
-    { id: 2, type: 'game', description: 'Played focus matching game', time: 'Yesterday', points: 10, icon: '🎮' },
-    { id: 3, type: 'mood', description: 'Reported feeling calm and focused', time: '2 days ago', points: 5, icon: '😊' },
-    { id: 4, type: 'therapy', description: 'Attended behavioral therapy session', time: '3 days ago', points: 20, icon: '🧠' },
-  ],
-
-  getTreatmentPlan: async (patientId) => ({
-    goals: [
-      'Increase sustained attention to 15 minutes',
-      'Complete morning routine independently',
-      'Improve emotional regulation during transitions',
-      'Reduce impulsive behaviors by 30%',
-      'Improve social interactions with peers'
-    ],
-    strategies: [
-      'Visual schedule with picture cues',
-      '5-minute warning before transitions',
-      'Focus timer with breaks every 20 minutes',
-      'Positive reinforcement system',
-      'Social stories for challenging situations'
-    ],
-    accommodations: [
-      'Preferential seating in classroom',
-      'Extended time for assignments',
-      'Use of fidget tools when needed',
-      'Quiet workspace available',
-      'Modified homework assignments'
-    ],
-    medications: [
-      { name: 'Methylphenidate', dosage: '10mg', frequency: 'Once daily', time: 'Morning' },
-      { name: 'Behavioral Therapy', dosage: 'N/A', frequency: 'Weekly', time: 'Wednesday 3 PM' }
-    ]
-  })
+  // 3. Add a new note
+  addNote: async (content, author) => {
+    const res = await fetch('http://localhost:5000/api/patient/notes', {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ content, author })
+    });
+    const json = await res.json();
+    if (!json.success) throw new Error(json.message);
+    return json.data; // Returns updated notes array
+  }
 };
 
 const Patient = () => {
@@ -123,20 +89,18 @@ const Patient = () => {
   const loadPatientData = async () => {
     setIsLoading(true);
     try {
-      const [patientData, statsData, activitiesData, planData] = await Promise.all([
-        PatientService.getPatientData(patientId || '1'),
-        PatientService.getPatientStats(patientId || '1'),
-        PatientService.getActivities(patientId || '1'),
-        PatientService.getTreatmentPlan(patientId || '1')
-      ]);
+      // One call gets everything from our new backend route!
+      const dashboardData = await PatientService.getFullDashboard();
 
-      setPatient(patientData);
-      setEditedPatient(patientData);
-      setStats(statsData);
-      setActivities(activitiesData);
-      setTreatmentPlan(planData);
+      setPatient(dashboardData.profile);
+      setEditedPatient(dashboardData.profile);
+      setStats(dashboardData.stats);
+      setActivities(dashboardData.activities);
+      setTreatmentPlan(dashboardData.treatmentPlan);
+      setPatientNotes(dashboardData.notes); // Assuming you added setPatientNotes to your state
     } catch (error) {
       console.error('Error loading patient data:', error);
+      showNotification('Failed to load data. Please log in again.', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -169,19 +133,19 @@ const Patient = () => {
   };
 
   // Add new note
-  const handleAddNote = () => {
+  const handleAddNote = async () => {
     if (!newNote.trim()) return;
 
-    const newNoteObj = {
-      id: patientNotes.length + 1,
-      date: new Date().toISOString().split('T')[0],
-      content: newNote,
-      author: userRole === 'parent' ? 'Parent' : userRole === 'therapist' ? 'Therapist' : 'Teacher'
-    };
-
-    setPatientNotes([newNoteObj, ...patientNotes]);
-    setNewNote('');
-    showNotification('Note added successfully!');
+    try {
+      const author = userRole === 'parent' ? 'Parent' : userRole === 'therapist' ? 'Therapist' : 'Teacher';
+      const updatedNotes = await PatientService.addNote(newNote, author);
+      setPatientNotes(updatedNotes);
+      setNewNote('');
+      showNotification('Note added successfully!');
+    } catch (error) {
+      console.error('Error adding note:', error);
+      showNotification('Failed to add note', 'error');
+    }
   };
 
   // Delete note

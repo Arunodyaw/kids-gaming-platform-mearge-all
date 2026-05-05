@@ -11,6 +11,7 @@ import PuzzleSuccess from './PuzzleSuccess';
 import FeedbackMessage from './FeedbackMessage';
 import { generatePuzzleGrid, shuffleArray, createPuzzlePieces } from '../../utils/puzzleUtils';
 import { saveGameStats } from '../../utils/puzzleReportUtils';
+import { MousePointer, MapPin } from 'lucide-react';
 
 // ADHD-friendly images with cute themes
 const puzzleImages = {
@@ -70,13 +71,11 @@ class SoundManager {
       
       switch(type) {
         case 'correct':
-          // Gentle "ding" sound - like a tiny bell
           this.playTone(523.25, 'sine', 0.25, gainNode);
           setTimeout(() => this.playTone(659.25, 'sine', 0.2, gainNode), 150);
           break;
           
         case 'incorrect':
-          // Soft "whoops" - like a gentle slide whistle
           const osc = this.audioContext.createOscillator();
           osc.type = 'sine';
           osc.frequency.value = 440;
@@ -88,7 +87,6 @@ class SoundManager {
           break;
           
         case 'complete':
-          // Happy little melody - like a cheerful "ta-da!"
           const notes = [523.25, 659.25, 783.99, 523.25];
           notes.forEach((freq, i) => {
             setTimeout(() => {
@@ -98,17 +96,14 @@ class SoundManager {
           break;
           
         case 'click':
-          // Soft "pop" sound
           this.playTone(880, 'sine', 0.1, gainNode);
           break;
           
         case 'pieceLock':
-          // Satisfying "click" sound when piece fits
           this.playTone(698.46, 'sine', 0.2, gainNode);
           break;
           
         case 'cheer':
-          // Short cheerful "yay" sound
           const cheerNotes = [523.25, 659.25];
           cheerNotes.forEach((freq, i) => {
             setTimeout(() => this.playTone(freq, 'sine', 0.25, gainNode), i * 100);
@@ -253,7 +248,7 @@ const JigsawPuzzle = () => {
     return () => clearInterval(timer);
   }, [gameStarted, completed, startTime]);
 
-  // Mouse tracking effect
+  // Mouse tracking effect for path length and points only
   useEffect(() => {
     if (!gameStarted || completed) return;
 
@@ -261,12 +256,14 @@ const JigsawPuzzle = () => {
       const currentTime = Date.now();
       const currentPos = { x: e.clientX, y: e.clientY };
 
+      // Record path points
       setMousePath(prev => [...prev, { 
         x: e.clientX, 
         y: e.clientY, 
         timestamp: currentTime 
       }]);
 
+      // Calculate raw speed (stored but not displayed)
       if (lastMousePosition && lastMouseTime) {
         const dx = currentPos.x - lastMousePosition.x;
         const dy = currentPos.y - lastMousePosition.y;
@@ -309,8 +306,6 @@ const JigsawPuzzle = () => {
       }
     }
     
-    
-
     const shuffledPieces = shuffleArray(allPieces).map(piece => ({
       ...piece,
       isPlaced: false,
@@ -333,6 +328,7 @@ const JigsawPuzzle = () => {
     setIsSaving(false);
     setShowCelebration(false);
     
+    // Reset mouse tracking
     setMousePath([]);
     setMouseSpeed([]);
     setLastMousePosition(null);
@@ -416,7 +412,6 @@ const JigsawPuzzle = () => {
   };
 
   const handleDropOnBoard = async (pieceId, boardId) => {
-    // Initialize audio on first interaction
     if (!gameStartedRef.current) {
       gameStartedRef.current = true;
       await initAudio();
@@ -482,7 +477,6 @@ const JigsawPuzzle = () => {
         setCompleted(true);
         setShowSuccess(true);
       } else {
-        // Show encouragement message
         const randomMessage = encouragingMessages[Math.floor(Math.random() * encouragingMessages.length)];
         setEncouragementMessage(randomMessage);
         setShowEncouragement(true);
@@ -554,12 +548,73 @@ const JigsawPuzzle = () => {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
+  // Calculate total path length for display
+  const getTotalPathLength = () => {
+    let total = 0;
+    for (let i = 1; i < mousePath.length; i++) {
+      const dx = mousePath[i].x - mousePath[i-1].x;
+      const dy = mousePath[i].y - mousePath[i-1].y;
+      total += Math.sqrt(dx * dx + dy * dy);
+    }
+    return Math.round(total);
+  };
+
   const goToAddChild = () => {
     navigate('/add-child');
   };
 
   return (
     <div className={`min-h-screen bg-gradient-to-br ${puzzleImages[difficulty].colors} p-4 md:p-6 relative overflow-hidden`}>
+      {/* Mouse Tracking Points Display Panel - Top Right */}
+      {gameStarted && (
+        <motion.div
+          initial={{ y: -50, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          className="fixed top-4 right-4 z-30 bg-white bg-opacity-95 backdrop-blur-sm rounded-2xl shadow-xl p-3 border-2 border-purple-200 min-w-[180px]"
+        >
+          <div className="space-y-2">
+            <div className="flex items-center justify-between border-b border-gray-200 pb-1">
+              <span className="text-xs font-semibold text-gray-600 flex items-center gap-1">
+                <MousePointer className="w-3 h-3" />
+                Mouse Tracking
+              </span>
+            </div>
+            
+            {/* Mouse Points Count */}
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-gray-600 flex items-center gap-1">
+                📍 Points:
+              </span>
+              <span className="text-sm font-bold text-purple-600">
+                {mousePath.length}
+              </span>
+            </div>
+            
+            {/* Path Length */}
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-gray-600 flex items-center gap-1">
+                <MapPin className="w-3 h-3" />
+                Path Length:
+              </span>
+              <span className="text-sm font-bold text-blue-600">
+                {getTotalPathLength()} px
+              </span>
+            </div>
+            
+            {/* Simple Interpretation */}
+            {mousePath.length > 0 && (
+              <div className="mt-1 pt-1 border-t border-gray-200 text-center">
+                <span className="text-[10px] text-gray-400">
+                  {mousePath.length < 50 ? '🎯 Just getting started!' : 
+                   mousePath.length < 200 ? '📈 Making progress!' : 
+                   '✨ You\'re moving around a lot!'}
+                </span>
+              </div>
+            )}
+          </div>
+        </motion.div>
+      )}
+
       {/* Star Burst Effect */}
       <AnimatePresence>
         {showStars && (
@@ -698,12 +753,7 @@ const JigsawPuzzle = () => {
           >
             <div className="text-6xl mb-3 animate-bounce">🎮✨👋</div>
             <p className="text-yellow-800 text-xl mb-3 font-bold">Let's create your player profile!</p>
-            <button
-              onClick={goToAddChild}
-              className="px-6 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-xl hover:from-yellow-600 hover:to-orange-600 font-bold text-lg shadow-lg transform hover:scale-105 transition-all inline-flex items-center gap-2"
-            >
-              <span>✨</span> Add My Profile <span>✨</span>
-            </button>
+            <p className="text-yellow-700 mb-6">Add a child to start playing and tracking your puzzle adventures! 🧩🌟</p>
           </motion.div>
         )}
 

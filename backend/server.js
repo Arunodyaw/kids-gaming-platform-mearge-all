@@ -280,10 +280,51 @@ const userSchema = new mongoose.Schema({
   role: { type: String },        // <-- NEW
   parentName: { type: String },  // <-- NEW
   parentPhone: { type: String }, // <-- NEW
-  // Memory Game Specific Stats
+  parentEmail: { type: String }, // Add this to match UI
+  
+  // Memory Game Stats
   memoryright: { type: Number, default: 0 },
   memorywrong: { type: Number, default: 0 },
   memorytime: { type: Number, default: 0 },
+
+  // --- NEW CLINICAL DATA FIELDS ---
+  gender: { type: String, default: 'Not specified' },
+  birthDate: { type: Date },
+  diagnosisDate: { type: Date },
+  adhdType: { type: String, default: 'Combined Type' },
+  severity: { type: String, default: 'Moderate' },
+  currentMedication: { type: String },
+  nextAppointment: { type: Date },
+  doctor: { type: String },
+  school: { type: String },
+  grade: { type: String },
+  emergencyContact: { type: String },
+  emergencyPhone: { type: String },
+  allergies: { type: String, default: 'None reported' },
+  generalNotes: { type: String },
+
+  // Arrays to hold lists of data
+  treatmentPlan: {
+    goals: [String],
+    strategies: [String],
+    accommodations: [String],
+    medications: [{ name: String, dosage: String, frequency: String, time: String }]
+  },
+  
+  activities: [{
+    type: { type: String }, // 'task', 'game', 'mood', 'therapy'
+    description: String,
+    date: { type: Date, default: Date.now },
+    points: Number,
+    icon: String
+  }],
+  
+  clinicalNotes: [{
+    date: { type: Date, default: Date.now },
+    content: String,
+    author: String
+  }],
+
   mlReports: [{
         date: { type: Date, default: Date.now },
         reportText: String,
@@ -511,6 +552,90 @@ app.get("/profile", isAuthenticated, async (req, res) => {
     });
   } catch (err) {
     console.error(err);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+});
+
+// --- NEW API ROUTES FOR PATIENT DASHBOARD ---
+
+// GET: Fetch full patient profile, stats, and plans
+app.get("/api/patient/full-profile", isAuthenticated, async (req, res) => {
+  try {
+    const user = await User.findOne({ username: req.user.username });
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    // Calculate dynamic stats
+    const totalGames = user.memoryright + user.memorywrong;
+    const focusScore = totalGames > 0 ? Math.round((user.memoryright / totalGames) * 100) : 0;
+
+    res.json({
+      success: true,
+      data: {
+        profile: {
+          id: user._id,
+          name: user.childName || 'Update Name',
+          gender: user.gender,
+          birthDate: user.birthDate,
+          diagnosisDate: user.diagnosisDate,
+          adhdType: user.adhdType,
+          severity: user.severity,
+          currentMedication: user.currentMedication,
+          nextAppointment: user.nextAppointment,
+          doctor: user.doctor,
+          school: user.school,
+          grade: user.grade,
+          parentName: user.parentName,
+          parentEmail: user.username, // Using email as username
+          parentPhone: user.parentPhone,
+          emergencyContact: user.emergencyContact,
+          emergencyPhone: user.emergencyPhone,
+          allergies: user.allergies,
+          notes: user.generalNotes
+        },
+        stats: {
+          focusScore: focusScore,
+          taskCompletion: 75, // You can make this dynamic later
+          dailyStreak: 3, 
+          totalPoints: user.score,
+          weeklyProgress: '+5%',
+          monthlyTrend: 'Improving'
+        },
+        activities: user.activities || [],
+        treatmentPlan: user.treatmentPlan || { goals: [], strategies: [], accommodations: [], medications: [] },
+        notes: user.clinicalNotes || []
+      }
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+});
+
+// PUT: Update patient profile details
+app.put("/api/patient/update", isAuthenticated, async (req, res) => {
+  try {
+    const updatedUser = await User.findOneAndUpdate(
+      { username: req.user.username },
+      { $set: req.body }, // Updates whatever fields React sends over
+      { new: true }
+    );
+    res.json({ success: true, message: "Profile updated!", data: updatedUser });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+});
+
+// POST: Add a new clinical note
+app.post("/api/patient/notes", isAuthenticated, async (req, res) => {
+  try {
+    const { content, author } = req.body;
+    const updatedUser = await User.findOneAndUpdate(
+      { username: req.user.username },
+      { $push: { clinicalNotes: { content, author, date: new Date() } } },
+      { new: true }
+    );
+    res.json({ success: true, data: updatedUser.clinicalNotes });
+  } catch (err) {
     res.status(500).json({ success: false, message: "Server Error" });
   }
 });
